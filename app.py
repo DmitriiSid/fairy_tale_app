@@ -53,7 +53,7 @@ app_mode =option_menu(
         orientation="horizontal"
     )
 if app_mode == 'Main screen':
-    st.subheader("Image generation using Open AI's DALL-E")
+    st.subheader("This is a Fairy Tale Generation App that uses AI to generates text and images from text prompt.")
     input_prompt = st.text_area(label="Enter a fairy tale description for generation", placeholder="A fairy tail about princess Freya ... ")
     if input_prompt is not None:
         if st.button("Generate Fairy Tail"):
