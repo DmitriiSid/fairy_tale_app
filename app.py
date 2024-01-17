@@ -16,7 +16,9 @@ from spacy.matcher import Matcher
 
 nlp = spacy.load("en_core_web_sm")
 
-nltk.download('punkt')
+if 'punkt_downloaded' not in st.session_state:
+    nltk.download('punkt')  
+    st.session_state['punkt_downloaded'] = True
 
 emotional_or_action_words = {
     'adventure', 'amazed', 'brave', 'caring', 'cheerful', 'courage', 'cry',
@@ -79,7 +81,6 @@ def create_descriptive_prompt(scenes):
     
     return prompts
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 
 API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
@@ -89,7 +90,7 @@ def query(payload):
 	response = requests.post(API_URL, headers=headers, json=payload)
 	return response.content
 
-def generate_images(prompts):
+def generate_images(prompts): # HuggingFace model
     images =[]
     for prompt in prompts:
         image_bytes = query({ "inputs": f"{prompt}",})
@@ -97,6 +98,55 @@ def generate_images(prompts):
     
     return images
 
+def generate_images_using_openai(model,prompts):
+    images = []
+    output_directory = "./images/"
+    if not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    
+    for i, prompt in enumerate(prompts):
+        # Generate the image response
+        response = client.images.generate(
+            model=model,
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+        image_url = response.data[0].url
+        image_response = requests.get(image_url)
+        image_response.raise_for_status()
+        img = Image.open(BytesIO(image_response.content))
+        output_filename = f"image_{i}.png"
+        img.save(os.path.join(output_directory, output_filename), 'PNG')
+
+        img_byte_arr = BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_byte_arr = img_byte_arr.getvalue()
+        images.append(img_byte_arr)
+    return images
+
+    # response = client.images.generate(
+    # #model="dall-e-3",
+    # model=f"{model}",
+    # prompt={prompt}
+    # #prompt="Daisy (cat) and Fiona spent their days exploring the castle corridors, chasing butterflies, and playing hide-and-seek.",
+    # size="1024x1024",
+    # quality="standard",
+    # n=1,
+    # )
+    # image_url = response.data[0].url
+    # image_url = response['data'][0]['url']
+    # return image_url
+
+
+#function to generate AI based images using Huggingface Diffusers
+# def generate_images_using_huggingface_diffusers(text):
+#     #pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
+#     pipe = pipe.to("cuda")
+#     prompt = text
+#     image = pipe(prompt).images[0] 
+#     return image
 
 def download_and_save_images(images):
     i = 1
@@ -124,6 +174,8 @@ def download_and_save_images(images):
 def encode_image_to_base64(path):
     with open(path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
+
+
 #from diffusers import StableDiffusionPipeline
 # import torch
 
@@ -155,7 +207,7 @@ def display_example():
     """
     key_scenes = ["As Fiona clung to her precious feline friend, she whispered,  Don't be afraid, Daisy.",
     'As the storm raged on, the windows shook, and the rain poured heavily.',
-    'Daisy and Fiona spent their days exploring the castle corridors, chasing butterflies, and playing hide-and-seek.',
+    'Daisy (cat) and Fiona spent their days exploring the castle corridors, chasing butterflies, and playing hide-and-seek.',
     'Determined to provide a loving home, Fiona carried the kitten to the castle, seeking assistance from her parents, the king, and queen.',
     'Fiona had long golden hair, sparkling blue eyes, and a heart filled with love for one thing in particular - cats.']
 
@@ -194,41 +246,33 @@ def display_example():
     markdown_text += story_text
     st.markdown(markdown_text, unsafe_allow_html=True)
 
-def generate_images_using_openai(text):
-    response = openai.Image.create(prompt= text, n=1, size="512x512")
-    image_url = response['data'][0]['url']
-    return image_url
-
-
-#function to generate AI based images using Huggingface Diffusers
-def generate_images_using_huggingface_diffusers(text):
-    #pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16)
-    pipe = pipe.to("cuda")
-    prompt = text
-    image = pipe(prompt).images[0] 
-    return image
 
 #Streamlit Code
 st.sidebar.info("🤖 Application settings 🤖")
 sd1, sd2 = st.sidebar.columns(2)
-lm = sd1.selectbox("Selec tmodel text for generation", ["GPT", "Lama", "Mistral"])
+lm = sd1.selectbox("Selec tmodel text for generation", ["GPT", "Llama", "Mistral"])
+image_model = sd2.selectbox("Select model for image generation", ["DALL-E-2", "DALL-E-3","Huggingface Diffusers"])
+user_key = st.container ()
+if lm == "GPT" or image_model == "DALL-E-2" or image_model == "DALL-E-3":
+    user_key = st.sidebar.text_input(label = " Enter your OpenAI API key")
 text2speech = st.sidebar.radio("Text to speech 👇", ["Actve", "Inactve"], horizontal=True)
-st.sidebar.info("🏰 Fairy Tail  settings 🏰")
-image_model = sd2.selectbox("Select model for image generation", ["Huggingface Diffusers","OpenJourney", "DALL-E"])
-sd1, sd2 = st.sidebar.columns(2)
-gender = sd1.radio("Select gender ", ["Boy", "Girl", "Diverse"], horizontal=True)
-child_name = sd2.text_input(label="Enter child's name ",placeholder="Optional")
+st.sidebar.info("🏰 Fairy Tale settings 🏰")
+#sd1, sd2 = st.sidebar.columns(2)
+gender = st.sidebar.radio("Select gender ", ["Boy", "Girl", "Diverse"], horizontal=True)
+#child_name = sd2.text_input(label="Enter child's name ",placeholder="Optional")
 age = st.sidebar.select_slider(
     "Select kid's age",
     options=[1,2,3,4,5,6,7,8,9,10,11,12],value=5)
 #text2speech_yes = sd1.checkbox( "Text to speech - actve")
 #text2speech_no = sd2.checkbox( "Text to speech - inactve")
 
-characters = st.sidebar.text_input(label="Which characters you want to be included ?", placeholder="Shrek, Cat in boots  ... ")
+characters = st.sidebar.text_input(label="Which characters you want to be included ?", placeholder="Shrek, Puff in boots  ... ")
 mood = st.sidebar.text_input(
     label="Mood (e.g. inspirational, funny, serious) (optional)",
     placeholder="inspirational",
 )
+openai.api_key = user_key
+#openai.api_key = st.secrets["OPENAI_API_KEY"]
 client = OpenAI()
 input_prompt = None
 
@@ -261,22 +305,29 @@ def generate_story(input_prompt,gender,age,characters,mood ):
 
 if app_mode == 'Main screen':
     st.subheader("This is a Fairy Tale Generation App that uses AI to generates text and images from text prompt.")
-    input_prompt = st.text_area(label="Enter a fairy tale description for generation", placeholder="A fairy tail about princess Freya ... ")
+    input_prompt = st.text_area(label="Enter a fairy tale description for generation", placeholder="A fairy tale about princess Freya ... ")
 
     if 'story_generated' not in st.session_state:
         st.session_state.story_generated = False
 
 
-    if input_prompt is not None:
-        if st.button("Generate Fairy Tail"):
+    if input_prompt is not None and user_key != '':
+        
+        if st.button("Generate Fairy Tale"):
             if gender and input_prompt and age and mood and characters:
                 with st.spinner('Wait for it...'):
     
                     story = generate_story(input_prompt,gender,age,characters,mood )
                     key_scenes = extract_key_scenes(story)
                     prompts = create_descriptive_prompt(key_scenes)
-                    images = generate_images(prompts)
-                    download_and_save_images(images)
+                    if image_model == "Huggingface":
+                        images = generate_images(prompts)
+                        download_and_save_images(images)
+                    if image_model == "DALL-E-2":
+                        images = generate_images_using_openai(model = "dall-e-2",prompts = prompts)
+                    if image_model == "DALL-E-3": 
+                        images = generate_images_using_openai(model = "dall-e-3",prompts = prompts)
+
                     image_directory = "./images/"
 
                     # Initialize an empty list to store image paths
@@ -323,11 +374,15 @@ if app_mode == 'Main screen':
                 #message.write(generate_story(input_prompt,gender,age,characters,mood ))
                 #display_example()
                 st.session_state.story_generated = True
-                st.balloons()
+                #st.balloons()
                 
                 
             else:
                 st.error("Some data is missing, check input options")
+    else:
+        col1, col2 = st.columns(2)
+        col1.button("Generate Fairy Tale",disabled = True)
+        col1.warning("Please set up your API key")
     if st.session_state.story_generated:
         if st.button("Delete the story",key="deleteButton"):
             st.session_state.story_generated = False
