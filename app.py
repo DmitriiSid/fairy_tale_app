@@ -1,6 +1,7 @@
 import random
 import streamlit as st 
 from streamlit_option_menu import option_menu
+from streamlit_lottie import st_lottie
 from dotenv import load_dotenv
 from PIL import Image
 import os
@@ -19,7 +20,14 @@ nlp = spacy.load("en_core_web_sm")
 if 'punkt_downloaded' not in st.session_state:
     nltk.download('punkt')  
     st.session_state['punkt_downloaded'] = True
+def load_lottie(url):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
+lottie_file= load_lottie("https://lottie.host/b0116ab0-d32f-4cc2-9c0b-d6e5be1022dc/xegcOEi7s8.json")
+lottie_pig = load_lottie("https://lottie.host/8fc522c9-2e53-4bda-a9c2-dda22dea81c5/ly1ZgXFc25.json")
 emotional_or_action_words = {
     'adventure', 'amazed', 'brave', 'caring', 'cheerful', 'courage', 'cry',
     'danger', 'discover', 'dream', 'escape', 'excited', 'fear', 'friend',
@@ -82,9 +90,10 @@ def create_descriptive_prompt(scenes):
     return prompts
 
 
-
+HUGGING_FACE_API_TOKEN = "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"
 API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
-headers = {"Authorization": f"""Bearer {st.secrets["HUGGING_FACE_API_TOKEN"]}"""}
+#headers = {"Authorization": f"""Bearer {st.secrets["HUGGING_FACE_API_TOKEN"]}"""}
+headers = {"Authorization": f"""Bearer {HUGGING_FACE_API_TOKEN}"""}
 
 def query(payload):
 	response = requests.post(API_URL, headers=headers, json=payload)
@@ -271,9 +280,9 @@ mood = st.sidebar.text_input(
     label="Mood (e.g. inspirational, funny, serious) (optional)",
     placeholder="inspirational",
 )
-openai.api_key = user_key
+#openai.api_key = user_key
 #openai.api_key = st.secrets["OPENAI_API_KEY"]
-client = OpenAI()
+client = OpenAI(api_key=user_key)
 input_prompt = None
 
 app_mode =option_menu(
@@ -315,8 +324,16 @@ if app_mode == 'Main screen':
         
         if st.button("Generate Fairy Tale"):
             if gender and input_prompt and age and mood and characters:
+                #with st.spinner('Wait for it...'):
                 with st.spinner('Wait for it...'):
-    
+                    lottie_placeholder = st.empty()
+                    loading_image = random.uniform(0, 1)
+                    with lottie_placeholder:
+                        if loading_image<=0.5:                            
+                            st_lottie(lottie_file)
+                        else:
+                            st_lottie(lottie_pig)
+
                     story = generate_story(input_prompt,gender,age,characters,mood )
                     key_scenes = extract_key_scenes(story)
                     prompts = create_descriptive_prompt(key_scenes)
@@ -368,6 +385,7 @@ if app_mode == 'Main screen':
 
                     # Add any remaining text after the last image
                     markdown_text += story_text
+                lottie_placeholder.empty()    
                 st.success("The story was generated ✅")
                 st.markdown(markdown_text, unsafe_allow_html=True)
                 #message = st.chat_message("assistant")
