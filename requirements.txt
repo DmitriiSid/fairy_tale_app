@@ -9,5 +9,5 @@ accelerate
 streamlit_option_menu==0.3.2
 nltk==3.8.1
 spacy==3.7.2
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.0.0/en_core_web_sm-3.0.0.tar.gz
+https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz
 streamlit-lottie
