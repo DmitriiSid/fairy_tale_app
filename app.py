@@ -436,6 +436,8 @@ if app_mode == 'Main screen':
         if st.button("Delete the story",key="deleteButton"):
             st.session_state.story_generated = False
             st.write("The story has been deleted. ✅")
+if app_mode == "About this app":
+    st.write("This app was developed as a term project")
     
 #     st.markdown(f"""
 #         <p>Once upon a time, in the kingdom of Enchantia, there lived a beautiful princess named Fiona. Fiona had long golden hair, sparkling blue eyes, and a heart filled with love for one thing in particular - cats. She adored everything about them, from their soft fur to their playful nature.</p>
