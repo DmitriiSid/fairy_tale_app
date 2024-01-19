@@ -55,7 +55,7 @@ def clean_scene(scene):
     scene = scene.replace('"', " ").strip() 
     return scene
 
-def extract_key_scenes(text, top_n=5):
+def extract_key_scenes(text, top_n=15):
     doc = nlp(text)
     matcher = build_matcher()
     matches = matcher(doc)
@@ -71,8 +71,8 @@ def extract_key_scenes(text, top_n=5):
     return sorted(list(key_sentences))[:top_n]
 
 def create_descriptive_prompt(scenes):
-    # List of adjectives and phrases to enrich the scenes
-    descriptive_adjectives = ['enchanting', 'mysterious', 'serene', 'joyful', 'dramatic']
+
+    descriptive_adjectives = ['enchanting', 'mysterious', 'serene', 'joyful', 'dramatic', 'delicate', 'delicious', 'delighted', 'delightful', 'delinquent', 'delirious', 'deliverable', 'deluded', 'demanding', 'demented', 'democratic', 'demonic', 'demonstrative', 'demure', 'deniable', 'dense', 'dependable', 'dependent', 'deplorable', 'deploring', 'depraved', 'depressed', 'depressing', 'depressive', 'deprived', 'deranged', 'derivative', 'derogative', 'derogatory', 'descriptive', 'deserted', 'designer', 'desirable', 'desirous', 'desolate', 'despairing', 'desperate', 'despicable']
     sensory_phrases = ['under the twinkling stars', 'in the lush, green garden', 'by the sparkling river']
     emotional_phrases = ['with a sense of wonder', 'feeling brave and bold', 'with a heart full of hope']
 
@@ -91,13 +91,13 @@ def create_descriptive_prompt(scenes):
 
 
 HUGGING_FACE_API_TOKEN = "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"
-API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
 #headers = {"Authorization": f"""Bearer {st.secrets["HUGGING_FACE_API_TOKEN"]}"""}
-headers = {"Authorization": f"""Bearer {HUGGING_FACE_API_TOKEN}"""}
 
 def query(payload):
-	response = requests.post(API_URL, headers=headers, json=payload)
-	return response.content
+    headers = {"Authorization": f"""Bearer {HUGGING_FACE_API_TOKEN}"""}
+    API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.content
 
 def generate_images(prompts): # HuggingFace model
     images =[]
@@ -184,15 +184,6 @@ def encode_image_to_base64(path):
     with open(path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode()
 
-
-#from diffusers import StableDiffusionPipeline
-# import torch
-
-# load_dotenv()
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-
-#function to generate AI based images using OpenAI Dall-E
-
 def display_example():
     story = """
     Once upon a time, in the kingdom of Enchantia, there lived a beautiful princess named Fiona. Fiona had long golden hair, sparkling blue eyes, and a heart filled with love for one thing in particular - cats. She adored everything about them, from their soft fur to their playful nature.
@@ -225,12 +216,7 @@ def display_example():
     './images/image_3.png',
     './images/image_4.png',
     './images/image_5.png']
-    
 
-    #images_paths
-    #key_scenes
-    #story
-        
     markdown_text = ""
 
     # Iterate through key scenes and images
@@ -259,7 +245,7 @@ def display_example():
 #Streamlit Code
 st.sidebar.info("🤖 Application settings 🤖")
 sd1, sd2 = st.sidebar.columns(2)
-lm = sd1.selectbox("Selec tmodel text for generation", ["GPT", "Llama", "Mistral"])
+lm = sd1.selectbox("Selec tmodel text for generation", ["GPT",  "Mistral"])
 image_model = sd2.selectbox("Select model for image generation", ["DALL-E-2", "DALL-E-3","Huggingface Diffusers"])
 user_key = st.container ()
 if lm == "GPT" or image_model == "DALL-E-2" or image_model == "DALL-E-3":
@@ -292,7 +278,29 @@ app_mode =option_menu(
         orientation="horizontal"
     )
 
-def generate_story(input_prompt,gender,age,characters,mood ):
+def text_query(payload,max_tokens = 3000 ):
+    headers = {"Authorization": f"""Bearer {HUGGING_FACE_API_TOKEN}"""}
+    API_URL = "https://api-inference.huggingface.co/models/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO"
+    payload["parameters"] = {"max_length": max_tokens} 
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.json()
+
+def generate_story_mistral(input_prompt,gender,age,characters,mood):
+    formatted_prompt = (f"You are a fairy tale teller; "
+                        f"You should generate a story based on these instructions: {input_prompt}. "
+                        f"The story should be no more than 500 words; "
+                        f"Child's gender is {gender}, child's age is {age}. "
+                        f"Make sure to use these characters {characters}. "
+                        f"The mood of the story should be {mood}"
+                        f"Make sure to end the story and that it is not longer than 700 words")
+    response = text_query({"inputs": formatted_prompt})
+    # if isinstance(response, list) and len(response) > 0:
+    #     content = response[0].get("generated_text", "")  # Assuming the story is in the first element of the list
+    # else:
+    #     content = ""
+    return response
+
+def generate_story(input_prompt,gender,age,characters,mood):
     response = client.chat.completions.create(
   #model="gpt-4-1106-preview",
   model="gpt-3.5-turbo",
@@ -312,7 +320,22 @@ def generate_story(input_prompt,gender,age,characters,mood ):
     content  = response.choices[0].message.content
     return content
 
+def continue_story(initial_story, continuation_tokens=100):
+    # Take the last part of the initial story as a new prompt
+    new_prompt = initial_story[-250:]  # Adjust the character count as needed
+    continuation_response = text_query({"inputs": new_prompt}, max_tokens=continuation_tokens)
+
+    if isinstance(continuation_response, list) and len(continuation_response) > 0:
+        continuation_content = continuation_response[0].get("generated_text", "")
+    else:
+        continuation_content = ""
+
+    return initial_story + continuation_content 
+
 if app_mode == 'Main screen':
+    if 'story' not in st.session_state:
+        st.session_state['story'] = ""
+    
     st.subheader("This is a Fairy Tale Generation App that uses AI to generates text and images from text prompt.")
     input_prompt = st.text_area(label="Enter a fairy tale description for generation", placeholder="A fairy tale about princess Freya ... ")
 
@@ -333,8 +356,15 @@ if app_mode == 'Main screen':
                             st_lottie(lottie_file)
                         else:
                             st_lottie(lottie_pig)
-
-                    story = generate_story(input_prompt,gender,age,characters,mood )
+                    if lm == "GPT":
+                        story = generate_story(input_prompt,gender,age,characters,mood)
+                    if lm == "Mistral":
+                        story = generate_story_mistral(input_prompt,gender,age,characters,mood)  
+                        story = story[0].get("generated_text","")
+                        start_phrase = "\n\n"                        
+                        if start_phrase in story:
+                            content = story.split(start_phrase, 1)[1]  # Keep the part after the phrase
+                            story = start_phrase + content                                               
                     key_scenes = extract_key_scenes(story)
                     prompts = create_descriptive_prompt(key_scenes)
                     if image_model == "Huggingface":
@@ -388,6 +418,7 @@ if app_mode == 'Main screen':
                 lottie_placeholder.empty()    
                 st.success("The story was generated ✅")
                 st.markdown(markdown_text, unsafe_allow_html=True)
+                
                 #message = st.chat_message("assistant")
                 #message.write(generate_story(input_prompt,gender,age,characters,mood ))
                 #display_example()
