@@ -250,13 +250,6 @@ mood = st.sidebar.text_input(
 client = OpenAI(api_key=st.session_state['api_key'])
 input_prompt = None
 
-app_mode =option_menu(
-        menu_title=None,
-        options=['Main screen','About this app'],
-        icons=['bi-house-fill','bi-info-square-fill'],
-        orientation="horizontal"
-    )
-
 def text_query(payload,max_tokens = 3000 ):
     headers = {"Authorization": f"""Bearer {HUGGING_FACE_API_TOKEN}"""}
     API_URL = "https://api-inference.huggingface.co/models/NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO"
@@ -311,6 +304,12 @@ def continue_story(initial_story, continuation_tokens=100):
 
     return initial_story + continuation_content 
 
+app_mode =option_menu(
+        menu_title=None,
+        options=['Main screen','About this app'],
+        icons=['bi-house-fill','bi-info-square-fill'],
+        orientation="horizontal"
+    )
 if app_mode == 'Main screen':
     if 'story' not in st.session_state:
         st.session_state['story'] = ""
