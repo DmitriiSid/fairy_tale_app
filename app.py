@@ -321,99 +321,110 @@ if app_mode == 'Main screen':
     if 'story_generated' not in st.session_state:
         st.session_state.story_generated = False
 
-    if input_prompt is not None and user_key != '':   
-        if st.button("Generate Fairy Tale"):
-            if gender and input_prompt and age and mood and characters:
-                #with st.spinner('Wait for it...'):
-                with st.spinner('Wait for it...'):
-                    lottie_placeholder = st.empty()
-                    loading_image = random.uniform(0, 1)
-                    with lottie_placeholder:
-                        if loading_image<=0.5:                            
-                            st_lottie(lottie_file)
-                        else:
-                            st_lottie(lottie_pig)
-                    if lm == "GPT":
-                        story = generate_story(input_prompt,gender,age,characters,mood)
-                    if lm == "Mistral":
-                        story = generate_story_mistral(input_prompt,gender,age,characters,mood)  
-                        story = story[0].get("generated_text","")
-                        start_phrase = "\n\n"                        
-                        if start_phrase in story:
-                            content = story.split(start_phrase, 1)[1]  # Keep the part after the phrase
-                            story = start_phrase + content                                               
-                    key_scenes = extract_key_scenes(story)
-                    prompts = create_descriptive_prompt(key_scenes)
-                    if image_model == "Huggingface":
-                        images = generate_images(prompts)
-                        download_and_save_images(images)
-                    if image_model == "DALL-E-2":
-                        images = generate_images_using_openai(model = "dall-e-2",prompts = prompts)
-                    if image_model == "DALL-E-3": 
-                        images = generate_images_using_openai(model = "dall-e-3",prompts = prompts)
+    col1, col2 = st.columns(2)
+    generate_button = col1.button("Generate Fairy Tale")
+    display_button = col2.button("Display Generated Story")
 
-                    image_directory = "./images/"
-
-                    # Initialize an empty list to store image paths
-                    images_paths = []
-
-                    # Check if the directory exists
-                    if os.path.exists(image_directory) and os.path.isdir(image_directory):
-                        # List all files in the directory
-                        image_files = os.listdir(image_directory)
-
-                        # Filter only image files (you can customize this to include specific file extensions)
-                        image_files = [file for file in image_files if file.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))]
-
-                        # Create full paths for the image files and add them to the 'images' list
-                        images_paths = [os.path.join(image_directory, file) for file in image_files]
+    if input_prompt is not None and user_key != '' and generate_button:   
+        #if st.button("Generate Fairy Tale"):
+        if gender and input_prompt and age and mood and characters:
+            with st.spinner('The fairy tale is generating ...'):
+                lottie_placeholder = st.empty()
+                loading_image = random.uniform(0, 1)
+                with lottie_placeholder:
+                    if loading_image<=0.5:                            
+                        st_lottie(lottie_file)
                     else:
-                        print(f"The directory '{image_directory}' does not exist.")
+                        st_lottie(lottie_pig)
+                if lm == "GPT":
+                    story = generate_story(input_prompt,gender,age,characters,mood)
+                if lm == "Mistral":
+                    story = generate_story_mistral(input_prompt,gender,age,characters,mood)  
+                    story = story[0].get("generated_text","")
+                    start_phrase = "\n\n"                        
+                    if start_phrase in story:
+                        content = story.split(start_phrase, 1)[1]  # Keep the part after the phrase
+                        story = start_phrase + content                                               
+                key_scenes = extract_key_scenes(story)
+                prompts = create_descriptive_prompt(key_scenes)
+                if image_model == "Huggingface":
+                    images = generate_images(prompts)
+                    download_and_save_images(images)
+                if image_model == "DALL-E-2":
+                    images = generate_images_using_openai(model = "dall-e-2",prompts = prompts)
+                if image_model == "DALL-E-3": 
+                    images = generate_images_using_openai(model = "dall-e-3",prompts = prompts)
 
-                    markdown_text = ""
+                image_directory = "./images/"
 
-                    # Iterate through key scenes and images
-                    for scene, image_path in zip(key_scenes, images_paths):
-                        # Split the text at the key scene
-                        parts = story.split(scene, 1)
-                        markdown_text += parts[0]
-                        
-                        # Encode the image
-                        base64_image = encode_image_to_base64(image_path)
+                # Initialize an empty list to store image paths
+                images_paths = []
 
-                        # Insert the image tag
-                        markdown_text += f'<img src="data:image/png;base64,{base64_image}" style="width: 50%; margin-left: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 0.5px; transition: transform 0.3s ease, box-shadow 0.3s ease;">'
+                # Check if the directory exists
+                if os.path.exists(image_directory) and os.path.isdir(image_directory):
+                    # List all files in the directory
+                    image_files = os.listdir(image_directory)
 
-                        # Add the scene text back
-                        markdown_text += scene
+                    # Filter only image files (you can customize this to include specific file extensions)
+                    image_files = [file for file in image_files if file.lower().endswith((".jpg", ".jpeg", ".png", ".gif"))]
 
-                        # Update the story_text to the remaining part after the key scene
-                        story_text = parts[1] if len(parts) > 1 else ''
+                    # Create full paths for the image files and add them to the 'images' list
+                    images_paths = [os.path.join(image_directory, file) for file in image_files]
+                else:
+                    print(f"The directory '{image_directory}' does not exist.")
 
-                    # Add any remaining text after the last image
-                    markdown_text += story_text
-                st.session_state['story'] = markdown_text
-                lottie_placeholder.empty()  
-                st.session_state.story_generated = True
-                st.success("The story was generated ✅")
-                st.markdown(st.session_state['story'], unsafe_allow_html=True)
-                
-                #message = st.chat_message("assistant")
-                #message.write(generate_story(input_prompt,gender,age,characters,mood ))
-                #display_example()
-                st.session_state.story_generated = True
-                #st.balloons()
-                
-                
-            else:
-                st.error("Some data is missing, check input options")
-    else:
-        col1, col2 = st.columns(2)
-        col1.button("Generate Fairy Tale",disabled = True)
-        col1.warning("Please set up your API key")
+                markdown_text = ""
+
+                # Iterate through key scenes and images
+                for scene, image_path in zip(key_scenes, images_paths):
+                    # Split the text at the key scene
+                    parts = story.split(scene, 1)
+                    markdown_text += parts[0]
+                    
+                    # Encode the image
+                    base64_image = encode_image_to_base64(image_path)
+
+                    # Insert the image tag
+                    markdown_text += f'<img src="data:image/png;base64,{base64_image}" style="width: 50%; margin-left: 5px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); border-radius: 0.5px; transition: transform 0.3s ease, box-shadow 0.3s ease;">'
+
+                    # Add the scene text back
+                    markdown_text += scene
+
+                    # Update the story_text to the remaining part after the key scene
+                    story_text = parts[1] if len(parts) > 1 else ''
+
+                # Add any remaining text after the last image
+                markdown_text += story_text
+            st.session_state['story'] = markdown_text
+            lottie_placeholder.empty()  
+            st.session_state.story_generated = True
+            st.success("The story was generated ✅")
+            st.markdown(st.session_state['story'], unsafe_allow_html=True)
+            
+            #message = st.chat_message("assistant")
+            #message.write(generate_story(input_prompt,gender,age,characters,mood ))
+            #display_example()
+            st.session_state.story_generated = True
+            #st.balloons()
+        else:
+            st.error("Some data is missing, check input options")
+    elif display_button:
+        if st.session_state.story_generated:
+            st.markdown(st.session_state['story'], unsafe_allow_html=True)
+        else:
+            st.warning("No story has been generated yet. Please generate a story first.")
+    if not input_prompt or not user_key:
+        col1.warning("Please enter a prompt and set up your API key.")
+
+    # else:
+    #     col1, col2 = st.columns(2)
+    #     col1.button("Generate Fairy Tale",disabled = True)
+    #     col1.warning("Please set up your API key")
     if st.session_state.story_generated:
         if st.button("Delete the story",key="deleteButton"):
             st.session_state.story_generated = False
+            st.session_state['story'] = ""
             st.write("The story has been deleted. ✅")
+            
 if app_mode == "About this app":
     st.write("This app was developed as a term project")
