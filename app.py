@@ -28,6 +28,11 @@ def load_lottie(url):
 
 lottie_file= load_lottie("https://lottie.host/b0116ab0-d32f-4cc2-9c0b-d6e5be1022dc/xegcOEi7s8.json")
 lottie_pig = load_lottie("https://lottie.host/8fc522c9-2e53-4bda-a9c2-dda22dea81c5/ly1ZgXFc25.json")
+
+st.set_page_config(page_title="Fairy Tale App",
+        page_icon="🔮",
+        layout="wide",
+        )
 emotional_or_action_words = {
     'adventure', 'amazed', 'brave', 'caring', 'cheerful', 'courage', 'cry',
     'danger', 'discover', 'dream', 'escape', 'excited', 'fear', 'friend',
