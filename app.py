@@ -396,7 +396,7 @@ if app_mode == 'Main screen':
                 lottie_placeholder.empty()  
                 st.session_state.story_generated = True
                 st.success("The story was generated ✅")
-                st.markdown(st.sesstion_state['story'], unsafe_allow_html=True)
+                st.markdown(st.session_state['story'], unsafe_allow_html=True)
                 
                 #message = st.chat_message("assistant")
                 #message.write(generate_story(input_prompt,gender,age,characters,mood ))
