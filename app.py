@@ -41,6 +41,9 @@ emotional_or_action_words = {
     'scared', 'search', 'surprise', 'treasure', 'trick', 'wish', 'wonder'
 }
 
+def about_page():
+    st.write("This app was developed as a term project")
+
 def build_matcher():
     matcher = Matcher(nlp.vocab)
     
@@ -431,4 +434,4 @@ if app_mode == 'Main screen':
             st.write("The story has been deleted. ✅")
 
 elif app_mode == "About this app":
-    st.write("This app was developed as a term project")
+    about_page()
