@@ -392,7 +392,7 @@ if app_mode == 'Main screen':
 
                     # Add any remaining text after the last image
                     markdown_text += story_text
-                st.sesstion_state['story'] = markdown_text
+                st.session_state['story'] = markdown_text
                 lottie_placeholder.empty()  
                 st.session_state.story_generated = True
                 st.success("The story was generated ✅")
