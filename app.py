@@ -55,7 +55,7 @@ def clean_scene(scene):
     scene = scene.replace('"', " ").strip() 
     return scene
 
-def extract_key_scenes(text, top_n=15):
+def extract_key_scenes(text, top_n=5):
     doc = nlp(text)
     matcher = build_matcher()
     matches = matcher(doc)
