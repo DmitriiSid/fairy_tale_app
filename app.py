@@ -425,6 +425,6 @@ if app_mode == 'Main screen':
             st.session_state.story_generated = False
             st.session_state['story'] = ""
             st.write("The story has been deleted. ✅")
-            
-if app_mode == "About this app":
+
+elif app_mode == "About this app":
     st.write("This app was developed as a term project")
