@@ -238,14 +238,16 @@ age = st.sidebar.select_slider(
     options=[1,2,3,4,5,6,7,8,9,10,11,12],value=5)
 #text2speech_yes = sd1.checkbox( "Text to speech - actve")
 #text2speech_no = sd2.checkbox( "Text to speech - inactve")
-
+if 'api_key' not in st.session_state or st.session_state['api_key'] != user_key:
+    st.session_state['api_key'] = user_key 
+    
 characters = st.sidebar.text_input(label="Which characters you want to be included ?", placeholder="Shrek, Puff in boots  ... ")
 mood = st.sidebar.text_input(
     label="Mood (e.g. inspirational, funny, serious) (optional)",
     placeholder="inspirational",
 )
 
-client = OpenAI(api_key=user_key)
+client = OpenAI(api_key=st.session_state['api_key'])
 input_prompt = None
 
 app_mode =option_menu(
@@ -390,9 +392,11 @@ if app_mode == 'Main screen':
 
                     # Add any remaining text after the last image
                     markdown_text += story_text
-                lottie_placeholder.empty()    
+                st.sesstion_state['story'] = markdown_text
+                lottie_placeholder.empty()  
+                st.session_state.story_generated = True
                 st.success("The story was generated ✅")
-                st.markdown(markdown_text, unsafe_allow_html=True)
+                st.markdown(st.sesstion_state['story'], unsafe_allow_html=True)
                 
                 #message = st.chat_message("assistant")
                 #message.write(generate_story(input_prompt,gender,age,characters,mood ))
