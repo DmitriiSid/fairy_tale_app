@@ -33,12 +33,19 @@ st.set_page_config(page_title="Fairy Tale App",
         page_icon="🔮",
         layout="wide",
         )
+
 emotional_or_action_words = {
-    'adventure', 'amazed', 'brave', 'caring', 'cheerful', 'courage', 'cry',
-    'danger', 'discover', 'dream', 'escape', 'excited', 'fear', 'friend',
-    'fun', 'funny', 'happy', 'help', 'hero', 'hide', 'joy', 'laugh', 'lonely',
-    'lost', 'love', 'magic', 'mystery', 'play', 'protect', 'rescue', 'sad',
-    'scared', 'search', 'surprise', 'treasure', 'trick', 'wish', 'wonder'
+    'adventure', 'amazed', 'angry', 'beautiful', 'benevolent', 'bewitched', 'blessed', 'brave',
+    'bright', 'calm', 'caring', 'cheerful', 'courage', 'courageous', 'cruel', 'cry', 'cunning',
+    'cursed', 'danger', 'daring', 'dark', 'deceptive', 'defeated', 'despairing', 'discover',
+    'dream', 'enchanted', 'escape', 'evil', 'excited', 'fateful', 'fear', 'fearless', 'foolish',
+    'forgiving', 'fortunate', 'found', 'friend', 'frightened', 'fun', 'funny', 'generous', 'gentle',
+    'greedy', 'grim', 'happy', 'hateful', 'help', 'hero', 'heroic', 'hidden', 'hide', 'honest',
+    'hopeful', 'joy', 'joyful', 'kindhearted', 'laugh', 'lonely', 'lost', 'love', 'loving', 'loyal',
+    'magic', 'magical', 'mysterious', 'mystery', 'noble', 'noisy', 'old', 'peaceful', 'play', 'poor',
+    'powerful', 'protect', 'rescue', 'revealed', 'rich', 'sad', 'scared', 'search', 'silent', 'sneaky',
+    'sorrowful', 'surprise', 'treacherous', 'treasure', 'trick', 'triumphant', 'ugly', 'vengeful',
+    'vicious', 'warlike', 'weak', 'whimsical', 'wicked', 'wise', 'wish', 'wonder', 'young'
 }
 
 def about_page():
@@ -127,7 +134,7 @@ def generate_images_using_openai(model,prompts):
             model=model,
             prompt=prompt,
             size="1024x1024",
-            quality="standard",
+            quality="hd",
             n=1,
         )
         image_url = response.data[0].url
