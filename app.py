@@ -88,8 +88,16 @@ def extract_key_scenes(text, top_n=5):
 def create_descriptive_prompt(scenes):
 
     descriptive_adjectives = ['enchanting', 'mysterious', 'serene', 'joyful', 'dramatic', 'delicate', 'delicious', 'delighted', 'delightful', 'delinquent', 'delirious', 'deliverable', 'deluded', 'demanding', 'demented', 'democratic', 'demonic', 'demonstrative', 'demure', 'deniable', 'dense', 'dependable', 'dependent', 'deplorable', 'deploring', 'depraved', 'depressed', 'depressing', 'depressive', 'deprived', 'deranged', 'derivative', 'derogative', 'derogatory', 'descriptive', 'deserted', 'designer', 'desirable', 'desirous', 'desolate', 'despairing', 'desperate', 'despicable']
-    sensory_phrases = ['under the twinkling stars', 'in the lush, green garden', 'by the sparkling river']
-    emotional_phrases = ['with a sense of wonder', 'feeling brave and bold', 'with a heart full of hope']
+    sensory_phrases = [
+    'under the twinkling stars', 'in the lush, green garden', 'by the sparkling river','amidst the whispering woods','over the rolling, fog-covered hills','beside the crackling campfire','within the ancient, echoing halls','underneath the bright, full moon','along the bustling, cobblestone streets','near the fragrant, blooming meadows','atop the windswept, rugged cliffs','inside the warm, cozy cottage','among the vibrant, bustling market','beneath the serene, azure sky','through the dense, misty rainforest','across the vast, sunbaked desert','within the quiet, hallowed chapel','along the gentle, babbling brook','in the midst of the thunderous storm','under the canopy of twinkling stars'
+    ]
+    emotional_phrases = [
+    'with a sense of wonder','feeling brave and bold','with a heart full of hope',
+    'overwhelmed with joy and excitement','shrouded in a veil of mystery','carrying the weight of sadness',
+    'filled with a burning curiosity','lost in a sea of confusion and doubt','radiating with unbridled happiness','consumed by a deep, unyielding anger','embracing a moment of peaceful serenity',
+    'overcome with a wave of nostalgia','bursting with pride and accomplishment','engulfed in the depths of despair','floating in a dream of whimsical fantasy','driven by a relentless thirst for adventure',
+    'soaring on the wings of freedom','trembling with fear and apprehension',
+    'awash in a flood of relief','drowning in a pool of regret and remorse']
 
     prompts = []
     for scene in scenes:
@@ -239,7 +247,7 @@ def display_example():
 st.sidebar.info("🤖 Application settings 🤖")
 sd1, sd2 = st.sidebar.columns(2)
 lm = sd1.selectbox("Select model for text generation", ["Mistral","GPT"])
-image_model = sd2.selectbox("Select model for image generation", ["Huggingface Diffusers", "DALL-E-2", "DALL-E-3"])
+image_model = sd2.selectbox("Select model for image generation", ["OpenJourney", "DALL-E-2", "DALL-E-3"])
 user_key = st.container ()
 if lm == "GPT" or image_model == "DALL-E-2" or image_model == "DALL-E-3":
     user_key = st.sidebar.text_input(label = " Enter your OpenAI API key",type='password')
