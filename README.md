@@ -1,2 +1,2 @@
-# AI-Image-Generation-Streamlit-App
-An AI-based image generation app built using Streamlit, Open AI's DALL-E, and huggingface diffusers.
+# Fairy Tale App
+This is a Fairy Tale Generation App that uses AI to generates text and images from text prompt.
