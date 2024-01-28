@@ -369,7 +369,7 @@ if app_mode == 'Main screen':
                         story = start_phrase + content                                               
                 key_scenes = extract_key_scenes(story)
                 prompts = create_descriptive_prompt(key_scenes)
-                if image_model == "Huggingface":
+                if image_model == "OpenJourney":
                     images = generate_images(prompts)
                     download_and_save_images(images)
                 if image_model == "DALL-E-2":
